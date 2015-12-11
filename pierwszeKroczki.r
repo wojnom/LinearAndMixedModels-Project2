@@ -70,7 +70,7 @@ dotplot(ranefM)
 
 
 
-# Moje wypociny w formie data.table - podobno fajny pomysł bo data.table ma działać dużo szybciej niż data.frame
+# Moje wypociny w formie data.table - podobno fajny pomysł bo data.table ma działać dużo szybciej niż data.frame [ZGADZAM SI�]
 # DTabelka <- data.table(as.integer(dendriticSpines[,1]),dendriticSpines[,2],dendriticSpines[,3],dendriticSpines[,4],dendriticSpines[,5],dendriticSpines[,6],dendriticSpines[,7])
 # sapply(DTabelka, class)
 # names(DTabelka) <- names(dendriticSpines)
