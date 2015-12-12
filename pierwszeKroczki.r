@@ -3,9 +3,12 @@ setwd("/Users/Marcin/Documents/R/modelemieszaneiliniowe/SecondProject")
 library("lme4")
 library("data.table")
 library("ggplot2")
+library("reshape")
+library("dplyr")
 head(load("dendriticSpines.rda"))
 
 head(dendriticSpines)
+summary(dendriticSpines)
 
 length(levels(as.factor(dendriticSpines[,3])))
 length(levels(as.factor(dendriticSpines[,2])))
@@ -84,3 +87,61 @@ dotplot(ranefM)
 # DTabelka[spine_number==3,]
 # tabelka[,summary(lm(length~mouse+treatment+mouse:treatment))]
 # tabelka[,lmer(length~mouse+treatment+(1|spine_number))]
+
+
+#####################################################################################
+spines <- data.table(dendriticSpines)
+
+##Wybieramy study
+spines[, .N, by = Study]
+selectedStudy <- "ko"
+spines <- filter(spines, Study == selectedStudy)
+list <- split(spines$mouse, spines$treatment)
+
+#W ka¿dym study analizowane s¹ tylko dwa rodzaje treatment oraz dwa typy myszy. 
+#W "ko" jest to odpowiednio: brak treatment, li oraz KO, WT. Pozosta³e poziomy obu zmiennych usuwamy.
+sapply(list, summary)
+spines$mouse <- factor(spines$mouse)
+spines$treatment <- factor(spines$treatment)
+spines$Photo_ID_abs <- factor(spines$Photo_ID_abs)
+spines$spine_number <- factor(spines$spine_number)
+
+#przyjrzyjmy siê dok³adniej liczbie spajnów na poszczególnych zdjêciach - czy jest zale¿noœæ miêdzy gêstoœci¹ sieci
+#spajnów a d³ugoœci¹? [nie jestem przekonana, czy tu coœ wykryjemy...]
+spines[, "Animal:Photo" := paste(Animal, Photo_ID_abs, sep = ":")]
+list <- split(spines$spine_number, spines$`Animal:Photo`)
+sapply(list, max)
+spines[, noOfSpines := max(spine_number), by = 'Animal:Photo']
+
+#Szukamy interakcji
+aggregate(length ~ mouse + treatment, data = spines, FUN = "mean")
+interaction.plot(spines$mouse, spines$treatment, spines$length)
+#Mo¿emy siê wiêc spodziewaæ, ¿e WT w po³¹czeniu z brakiem treatment daje d³u¿sze spajny.
+
+#Budujemy model.
+model <- lmer(length ~ treatment*mouse + (1|Animal:Photo_ID_abs), data = spines)
+summary(model) #trzeba przekszta³ciæ wartoœci t na p-value
+
+#Budujemy model, dodaj¹c liczbê spajnów
+model2 <- lmer(length ~ treatment*mouse + (1|Animal), data = spines)
+summary(model2)
+
+
+#Który model lepszy?
+anova(model, model2) #mo¿emy zostaæ przy pierwszym
+
+model3 <- lmer(length ~ treatment*mouse + (1|Animal:Photo_ID_abs), data = spines)
+summary(model3)
+
+anova(model2, model3)
+
+
+#DO ZROBIENIA:
+
+#Diagnostyka
+      ##Czy epsilon ma rozk³ad normalny?
+      ##Czy u ma rozk³ad normalny?
+      ##Czy wszystkie zmienne s¹ istotne? - testy permutacyjne
+      ##Obrazki
+
+      
