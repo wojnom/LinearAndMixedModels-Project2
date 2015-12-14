@@ -136,12 +136,146 @@ summary(model3)
 anova(model2, model3)
 
 
+######################################################################
+
+### Z ANOVY wynika, ze zostajemy przy modelu z Animal:Photo
+
+#Czy reszty maja rozklad normalny?
+qqnorm(residuals(model),pch=16) #ZDECYDOWANIE NIE
+qqnorm(residuals(model2),pch=16) #TEN MODEL TEZ NIE JEST LEPSZY
+qqnorm(residuals(model3),pch=16) #TU TAKZE TRAGEDIA
+#Te reszty wyraznie rosna, wiec dla duzych liczb jest odchylenie od rozkladu normalnego.
+#Wydaje mi sie ze logarytmowanie powinno pomoc.
+
+#Przeksztalcam dane:
+hist(spines$length)
+range(spines$length)
+
+#Funkcja logtransform dziala dla modeli liniowych, ale jak wpisywalem model mieszany,to
+#dostawalem bledy. Szukalem chwile w necie jak to poprawic, ale nie znalazlem.
+#Obejrzalem wiec pare qqplotow, zeby na oko dobrac dobra transformacje danych
+
+model4 <- lmer(log(length) ~ treatment*mouse + (1|Animal:Photo_ID_abs), data = spines)
+qqnorm(residuals(model4),pch=16)
+
+#Jaka jest najlepsza transformacja w klasie logtrans?
+model_list <- list(21)
+for(i in 0:20){
+      model_list[[i+1]] <- lmer(log(length-0.1+i*0.01) ~ treatment*mouse + (1|Animal:Photo_ID_abs), 
+                                data = spines)
+}
+
+#na moje oko najlepszy model to log(length-0.04), czyli model_list[[6]]
+par(mfrow=c(4,5))
+for (i in 1:20){
+      new_model <- model_list[[i]]
+      qqnorm(residuals(new_model),pch=16)
+      qqline(residuals(new_model))
+}
+
+# Jak sprawdzic to nie na oko? Przy pomocy wiarygodnosci
+LLH <- sapply(model_list,logLik)
+which.max(LLH)
+LLH
+#O dziwo zwraca to inne wyniki ni¿ wynik na oko
+#Tutaj jest porównanie najlepszego wykresu na moje oko i tego z najlepsza LLH
+par(mfrow=c(1,2))
+qqnorm(residuals(model_list[[7]]),pch=16)
+qqline(residuals(model_list[[7]]))
+qqnorm(residuals(model_list[[20]]),pch=16)
+qqline(residuals(model_list[[20]]))
+
+#Jaka transformacja jest najlepsza w klasie BoxCox?
+
+BC <- function(y,lambda=1){
+      if(lambda !=0){
+            (y^lambda-1)/lambda
+      }else{
+            log(y)
+      }
+}
+
+model_list_2 <- list(21)
+for(i in 0:20){
+      model_list_2[[i+1]] <- lmer(BC(spines$length,-2+i*0.2) ~ treatment*mouse + (1|Animal:Photo_ID_abs), data = spines)
+}
+
+par(mfrow=c(4,5))
+for (i in 1:20){
+      new_model <- model_list_2[[i]]
+      qqnorm(residuals(new_model),pch=16)
+      qqline(residuals(new_model))
+}
+
+#sensowne rysunki sa dla 10 i 11 modelu, tzn. dla logarytmu i 5(y^0.2-1)
+logLik(model_list_2[[10]])
+logLik(model_list_2[[11]])
+
+#Porownanie najlepszego modelu z BoxCox z najlepszym logtrans
+#Tytul wykresu to loglikelihood
+par(mfrow=c(1,2))
+best_logtrans <- model_list[[7]]
+qqnorm(residuals(best_logtrans),pch=16,main=round(logLik(best_logtrans)))
+qqline(residuals(best_logtrans))
+best_BC <- model_list_2[[11]]
+qqnorm(residuals(best_BC),pch=16,,main=round(logLik(best_BC)))
+qqline(residuals(best_BC))
+#Trudno mi powiedziec na który model mamy sie zdecydowac
+#Ja bym wybral chyba ten lewy wykres. 
+
+best_model <- best_logtrans
+logLik(best_model)
+summary(best_model)
+
+library(lattice)
+#Czy u ma rozklad normalny?
+u=ranef(best_model,postVar=T)
+dotplot(u)
+#Wyraznie odstaja skrajne grupy :/ Moim zdaniem to nie jest raczej rozklad normalny
+
+#Istotnosc czynnikow stalych
+tStat <- summary(best_model)$coeff[,3]
+pValues <- sapply(1:length(tStat),function(i) {2*pnorm(abs(tStat[i]),lower.tail = F)})
+pValues
+#Z testu Walda wynika, ze mouse WT i interakcja sa na pewno istotne, a treatment tylko na 
+#poziomie 5%
+
+#UWAGA : W labach kazdy taki test(1000 powtorzen) robil sie ok. 2 minut
+
+#Test permutacyjny sprawdzajacy czy rodzaj myszy jest istotny
+N <- 1000
+logs <- replicate(N, logLik(lmer(log(length-0.04) ~ 
+                                       treatment*sample(mouse) + (1|Animal:Photo_ID_abs), data = spines)))
+mean(logs>logLik(best_model)) 
+# mi wysz³o,ze srednia to 0,wiec rodzaj myszy jest istotny
+
+#Test permutacyjny sprawdzajacy czy sposob leczenia jest istotny
+N <- 1000
+logs <- replicate(N, logLik(lmer(log(length-0.04) ~ 
+                                       sample(treatment)*mouse + (1|Animal:Photo_ID_abs), data = spines)))
+mean(logs>logLik(best_model))
+#Tutaj te¿ mean =0 
+
+#Wyniki testow permutacyjnych zgadzaja sie z testem Walda, wiec jest dobrze.
+
+#Test permutacyjny sprawdzajaczy czy komponent wariacyjny jest istotny
+spinesPermuted <- spines
+N <- 1000
+logs <- replicate(N, {
+      spinesPermuted$`Animal:Photo` <- sample(spinesPermuted$`Animal:Photo`)
+      logLik(lmer(log(length-0.04) ~ treatment*mouse + (1|`Animal:Photo`), data = spinesPermuted))
+}
+)
+mean(logs>logLik(best_model))
+#znow srednia wyszla mi 0, czyli komponent wariacyjny jest istotny
+
+#cos za dobre te wyniki...
+#Widzicie gdzies blad?
+
+
+
 #DO ZROBIENIA:
 
-#Diagnostyka
-      ##Czy epsilon ma rozk³ad normalny?
-      ##Czy u ma rozk³ad normalny?
-      ##Czy wszystkie zmienne s¹ istotne? - testy permutacyjne
-      ##Obrazki
+##Obrazki
 
       
