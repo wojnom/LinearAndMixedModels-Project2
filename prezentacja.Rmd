@@ -12,6 +12,7 @@ library(data.table)
 library(gridExtra)
 library(ggplot2)
 library(lme4)
+library(reshape)
 load("dendriticSpines.rda")
 spines <- data.table(dendriticSpines)
 #spines[, .N, by = Study]
@@ -23,68 +24,66 @@ spines <- spines[Study==selectedStudy,]
 
 lengthPerTreatment <- ggplot(data = spines, aes(x = treatment, y = length)) + geom_boxplot(aes(fill = treatment))
 lengthPerMouseType <- ggplot(data = spines, aes(x = mouse, y = length))+geom_boxplot(aes(fill = mouse))
+
 grid.arrange(lengthPerTreatment,lengthPerMouseType, ncol = 2)
-
 (lengthPerMouseDifferentiatedByTreatment <- ggplot(data = spines, aes(x = mouse, y = length)) + geom_boxplot(aes(fill = treatment)))
-
-
 ```
 
 ### 2. Hypothesis
-#### Interaction between mouse type and treatment
-```{r, warning=FALSE, message=FALSE}
-list <- split(spines$mouse, spines$treatment)
-
-#W ka¿dym study analizowane s¹ tylko dwa rodzaje treatment oraz dwa typy myszy. 
-#W "ko" jest to odpowiednio: brak treatment, li oraz KO, WT. Pozosta³e poziomy obu zmiennych usuwamy.
-sapply(list, summary)
+##### Interaction between mouse type and treatment
+We may see significantly different means between different combinations of mouse and treatment
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
 spines$mouse <- factor(spines$mouse)
 spines$treatment <- factor(spines$treatment)
 spines$Photo_ID_abs <- factor(spines$Photo_ID_abs)
 spines$spine_number <- factor(spines$spine_number)
+dcast(spines[,mean(length), by=c("mouse", "treatment")], treatment ~ mouse)
+```
 
-#przyjrzyjmy siê dok³adniej liczbie spajnów na poszczególnych zdjêciach - czy jest zale¿noœæ miêdzy gêstoœci¹ sieci
-#spajnów a d³ugoœci¹? [nie jestem przekonana, czy tu coœ wykryjemy...]
-spines[, "Animal:Photo" := paste(Animal, Photo_ID_abs, sep = ":")]
-list <- split(spines$spine_number, spines$`Animal:Photo`)
-
-
-#Szukamy interakcji
-aggregate(length ~ mouse + treatment, data = spines, FUN = "mean")
+```{r, warning=FALSE, message=FALSE}
 interaction.plot(spines$mouse, spines$treatment, spines$length)
-#Mo¿emy siê wiêc spodziewaæ, ¿e WT w po³¹czeniu z brakiem treatment daje d³u¿sze spajny.
-
-#Budujemy model.
-model <- lmer(length ~ treatment*mouse + (1|Animal:Photo_ID_abs), data = spines)
-summary(model) #trzeba przekszta³ciæ wartoœci t na p-value
-
-#Budujemy model, dodaj¹c liczbê spajnów
-model2 <- lmer(length ~ treatment*mouse + (1|Animal), data = spines)
-summary(model2)
-
-
-#Który model lepszy?
-anova(model, model2) #mo¿emy zostaæ przy pierwszym
-
-model3 <- lmer(length ~ treatment*mouse + (1|Animal:Photo_ID_abs), data = spines)
-summary(model3)
-
-anova(model2, model3)
 ```
 
 ### 3. How we got there?
-
+#### Maybe number of spines on the photo means something?
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+#tutaj przygotowujemy dane i nie pokazujemy jak?
+```
+As we may observe, it doesn't really matter
 ```{r, warning=FALSE, message=FALSE}
-
+#tutaj pokazujemy jak robimy dwa modele i anove na nich
+#model <- lmer(length ~ treatment*mouse + (1|Animal:Photo_ID_abs), data = spines)
+#summary(model) #trzeba przekszta³ciæ wartoœci t na p-value
+#model2 <- lmer(length ~ treatment*mouse + (1|Animal), data = spines)
+#anova(model, model2)
+#model3 <- lmer(length ~ treatment*mouse + (1|Animal:Photo_ID_abs), data = spines)
+#anova(model2, model3)
+```
+#### Fixed effect shall be mouse and treatment
+It is pretty straightforward from a logical point of view. Finding mouse type and treatment of a particular mouse is obvious (so it's cheap) and there is comparatively small number of possible levels
+```{r, warning=FALSE, message=FALSE}
+```
+#### Random effects shall be Animal and Photo
+Effect of a single animal is random - every study and every year animals are just different individuals. After a quick look at the data we may see that number of photos per animal is irregular. Interestingly, for our study (i.e. KO) there is no such case that particular photo number occurs for two (or more) different animals.
+```{r, warning=FALSE, message=FALSE}
+```
+#### Why Photo should be considered as nested in Animal?
+Despite the fact it shouldn't matter in our study (as stated just before) it is reasonable (and confirmed by simulations) to look at photos as 'effects of single animal'.
+```{r, warning=FALSE, message=FALSE}
+```
+#### So the model will be length ~ treatment + mouse + (1|Animal/Photo)
+```{r, warning=FALSE, message=FALSE}
+```
+#### Diagnostyka - Michal cisnie!
+```{r, warning=FALSE, message=FALSE}
 ```
 
-### 4. Conclusions
+### 4. Conclusions - Michal, jakbys mogl to na koniec jakos skomponowac...
 
 ```{r, warning=FALSE, message=FALSE}
-
 ```
 
 ### 5. Literature
-##### [1] Modele liniowe z efektami stałymi, losowymi i mieszanymi. P. Biecek
+#### [1] Modele liniowe z efektami stałymi, losowymi i mieszanymi. P. Biecek
 
-##### [2] www.google.com
+#### [2] www.google.com
