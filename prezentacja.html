@@ -109,13 +109,21 @@ grid.arrange(lengthPerTreatment,lengthPerMouseType, ncol = 2)</code></pre>
 <div id="maybe-number-of-spines-on-the-photo-means-something" class="section level4">
 <h4>Maybe number of spines on the photo means something?</h4>
 <p>As we may observe, it doesn’t really matter</p>
-<pre class="r"><code>#tutaj pokazujemy jak robimy dwa modele i anove na nich
-#model &lt;- lmer(length ~ treatment*mouse + (1|Animal:Photo_ID_abs), data = spines)
-#summary(model) #trzeba przekszta³ciæ wartoœci t na p-value
-#model2 &lt;- lmer(length ~ treatment*mouse + (1|Animal), data = spines)
-#anova(model, model2)
-#model3 &lt;- lmer(length ~ treatment*mouse + (1|Animal:Photo_ID_abs), data = spines)
-#anova(model2, model3)</code></pre>
+<pre class="r"><code>spines[, noOfSpines := max(spine_number), by = 'Animal:Photo']
+model &lt;- lmer(length ~ treatment*mouse + (1|Animal) + (1|Photo_ID_abs), data = spines)
+modelWithNoOfSpines &lt;- lmer(length ~ treatment*mouse + (1|Animal) + (1|Photo_ID_abs) + (1|noOfSpines), data = spines)
+anova(model, modelWithNoOfSpines)</code></pre>
+<pre><code>## Data: spines
+## Models:
+## model: length ~ treatment * mouse + (1 | Animal) + (1 | Photo_ID_abs)
+## modelWithNoOfSpines: length ~ treatment * mouse + (1 | Animal) + (1 | Photo_ID_abs) + 
+## modelWithNoOfSpines:     (1 | noOfSpines)
+##                     Df     AIC     BIC logLik deviance Chisq Chi Df
+## model                7 -2829.3 -2781.8 1421.7  -2843.3             
+## modelWithNoOfSpines  8 -2827.3 -2773.1 1421.7  -2843.3 2e-04      1
+##                     Pr(&gt;Chisq)
+## model                         
+## modelWithNoOfSpines     0.9892</code></pre>
 </div>
 <div id="fixed-effect-shall-be-mouse-and-treatment" class="section level4">
 <h4>Fixed effect shall be mouse and treatment</h4>
