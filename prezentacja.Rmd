@@ -1,0 +1,90 @@
+---
+title: "Project 2"
+author: "Durszlaczek i przyjaciele"
+date: "Modele liniowe i mieszane"
+output: 
+  html_document:
+    toc: TRUE
+---
+### 1. Introduction - study description and overview
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+library(data.table)
+library(gridExtra)
+library(ggplot2)
+library(lme4)
+load("dendriticSpines.rda")
+spines <- data.table(dendriticSpines)
+#spines[, .N, by = Study]
+```
+##### Study : KO
+```{r, warning=FALSE, message=FALSE}
+selectedStudy <- "ko"
+spines <- spines[Study==selectedStudy,]
+
+lengthPerTreatment <- ggplot(data = spines, aes(x = treatment, y = length)) + geom_boxplot(aes(fill = treatment))
+lengthPerMouseType <- ggplot(data = spines, aes(x = mouse, y = length))+geom_boxplot(aes(fill = mouse))
+grid.arrange(lengthPerTreatment,lengthPerMouseType, ncol = 2)
+
+(lengthPerMouseDifferentiatedByTreatment <- ggplot(data = spines, aes(x = mouse, y = length)) + geom_boxplot(aes(fill = treatment)))
+
+
+```
+
+### 2. Hypothesis
+#### Interaction between mouse type and treatment
+```{r, warning=FALSE, message=FALSE}
+list <- split(spines$mouse, spines$treatment)
+
+#W ka¿dym study analizowane s¹ tylko dwa rodzaje treatment oraz dwa typy myszy. 
+#W "ko" jest to odpowiednio: brak treatment, li oraz KO, WT. Pozosta³e poziomy obu zmiennych usuwamy.
+sapply(list, summary)
+spines$mouse <- factor(spines$mouse)
+spines$treatment <- factor(spines$treatment)
+spines$Photo_ID_abs <- factor(spines$Photo_ID_abs)
+spines$spine_number <- factor(spines$spine_number)
+
+#przyjrzyjmy siê dok³adniej liczbie spajnów na poszczególnych zdjêciach - czy jest zale¿noœæ miêdzy gêstoœci¹ sieci
+#spajnów a d³ugoœci¹? [nie jestem przekonana, czy tu coœ wykryjemy...]
+spines[, "Animal:Photo" := paste(Animal, Photo_ID_abs, sep = ":")]
+list <- split(spines$spine_number, spines$`Animal:Photo`)
+
+
+#Szukamy interakcji
+aggregate(length ~ mouse + treatment, data = spines, FUN = "mean")
+interaction.plot(spines$mouse, spines$treatment, spines$length)
+#Mo¿emy siê wiêc spodziewaæ, ¿e WT w po³¹czeniu z brakiem treatment daje d³u¿sze spajny.
+
+#Budujemy model.
+model <- lmer(length ~ treatment*mouse + (1|Animal:Photo_ID_abs), data = spines)
+summary(model) #trzeba przekszta³ciæ wartoœci t na p-value
+
+#Budujemy model, dodaj¹c liczbê spajnów
+model2 <- lmer(length ~ treatment*mouse + (1|Animal), data = spines)
+summary(model2)
+
+
+#Który model lepszy?
+anova(model, model2) #mo¿emy zostaæ przy pierwszym
+
+model3 <- lmer(length ~ treatment*mouse + (1|Animal:Photo_ID_abs), data = spines)
+summary(model3)
+
+anova(model2, model3)
+```
+
+### 3. How we got there?
+
+```{r, warning=FALSE, message=FALSE}
+
+```
+
+### 4. Conclusions
+
+```{r, warning=FALSE, message=FALSE}
+
+```
+
+### 5. Literature
+##### [1] Modele liniowe z efektami stałymi, losowymi i mieszanymi. P. Biecek
+
+##### [2] www.google.com
