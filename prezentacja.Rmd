@@ -70,21 +70,113 @@ Effect of a single animal is random - every study and every year animals are jus
 ```
 #### Why Photo should be considered as nested in Animal?
 Despite the fact it shouldn't matter in our study (as stated just before) it is reasonable (and confirmed by simulations) to look at photos as 'effects of single animal'.
-```{r, warning=FALSE, message=FALSE, echo=FALSE}
-```
-#### So the model will be length ~ treatment + mouse + (1|Animal/Photo)
-```{r, warning=FALSE, message=FALSE, echo=FALSE}
-```
-#### Diagnostyka - Michal cisnie!
-```{r, warning=FALSE, message=FALSE, echo=FALSE}
+
+#### So the model will be similar to length ~ treatment + mouse + (1|Animal/Photo)
+```{r, warning=FALSE, message=FALSE}
+modelZagniezdzony <- lmer(length ~ mouse * treatment+ (1|Animal/Photo_ID_abs), data = spines)
+qqnorm(residuals(modelZagniezdzony),pch=1)
 ```
 
-### 4. Conclusions - Michal, jakbys mogl to na koniec jakos skomponowac...
+Unfortunately the assumptions of mixed models are not met, because residuals don't have normal distribution. Looking at tail of this qqplot we guessed, that taking the logarithm of our dependant variable might be helpful. 
 
-```{r, warning=FALSE, message=FALSE, echo=FALSE}
+```{r, warning=FALSE, message=FALSE,echo=FALSE}
+#######logtrans
+
+#model_list <- list(21)
+#for(i in 0:20){
+#model_list[[i+1]] <- lmer(log(length-0.1+i*0.01) ~ treatment*mouse + (1|Animal/Photo_ID_abs), data = spines)
+#}
+#par(mfrow = c(4,5))
+#for (i in 1:20){
+#new_model <- model_list[[i]]
+#qqnorm(residuals(new_model),pch=16)
+#qqline(residuals(new_model))
+#}
+
+########BoxCox
+#BC <- function(y,lambda=1){
+#if(lambda !=0){
+#(y^lambda-1)/lambda
+#}else{
+#log(y)
+#}
+#}
+
+#model_list_2 <- list(21)
+#for(i in 0:20){
+#model_list_2[[i+1]] <- lmer(BC(spines$length,-2+i*0.2) ~ treatment*mouse + (1|Animal/Photo_ID_abs), data = spines)
+#}
+
+#par(mfrow=c(4,5))
+#for (i in 1:20){
+#new_model <- model_list_2[[i]]
+#qqnorm(residuals(new_model),pch=16)
+#qqline(residuals(new_model))
+#}
 ```
+
+We checked qqplots of many different models in logtrans and BoxCox class. After that we decided, that our model will be 
+```{r, warning=FALSE, message=FALSE}
+superModel <- lmer(log(length-0.04) ~ treatment*mouse + (1|Animal/Photo_ID_abs), 
+data = spines)
+summary(superModel)
+par(mfrow = c(1,1))
+qqnorm(residuals(superModel))
+qqline(residuals(superModel))
+```
+
+Now we can assume, that the residuals follow the normal distribution. Another assumption is that u is normally distributed too. Let's see whether it's false or not.
+```{r, warning=FALSE, message=FALSE}
+library(lattice)
+u=ranef(superModel,postVar=T)
+dotplot(u)
+qqmath(u)$`Animal:Photo_ID_abs`
+```
+
+Although middpoints of confidence intervals do not look like normal cdf, we still can fit the theoretical normal cdf into our confidence intervals, therefore we don't reject the hypothesis, that u has normal distribution.
+
+### Are all components of our model significant?
+Firstly let's check whether fixed effects are important by looking at p-values.
+```{r, warning=FALSE, message=FALSE}
+tStat <- summary(superModel)$coeff[,3]
+pValues <- sapply(1:length(tStat),function(i) {2*pnorm(abs(tStat[i]),lower.tail = F)})
+pValues
+```
+
+This p-values give the same information as previously showed boxplots, that is intercept, mouse and interaction effects are significant, while treatment effect is not.
+
+Should we include random effect? Yes, we should. It can be proved with permutational test
+```{r, warning=FALSE, message=FALSE}
+N <- 1000
+logs <- replicate(N, logLik(lmer(log(length-0.04) ~ 
+treatment + mouse + sample(treatment:mouse) + (1|Animal/Photo_ID_abs), data = spines)))
+mean(logs > logLik(superModel))
+```
+
+We can check whether nested model is better then the simpler one by using ANOVA test. 
+```{r, warning=FALSE, message=FALSE}
+superModel2 <- lmer(log(length-0.04) ~ treatment*mouse + (1|Animal), 
+data = spines)
+
+anova(superModel2, superModel)
+```
+
+Low Pr(>Chisq) indicates that we can't neglect component (1|Animal:Photo_ID_abs), therefore our ituition, that random component should be of the form Animal/Photo_ID_abs was correct.
+
+We showed, that our model is reasonable. Now we can check, by permutational test, if our hypothesis was correct. By permuting column with interaction effect we see, that indeed there is significant interaction between mouse type and treatment.
+```{r, warning=FALSE, message=FALSE}
+N <- 100#1000
+spines$interaction <- (spines$mouse=="WT")*(spines$treatment=="li")
+logs <- replicate(N, logLik(lmer(log(length-0.04) ~ treatment + mouse + sample(interaction) + (1|Animal/Photo_ID_abs), data = spines)))
+mean(logs > logLik(superModel))
+```
+
+### 4. Conclusions
+
+In study 'ko' both plots and computations show that there is an interaction between the mouse type and the treatment. Although the simplest model explaining length of spine doesn't satisfy all assumptions of mixed models, by suitable transformation of data we can build a valid model, which shows the relation between length,treatment,mouse,animal and photo_ID_abs.
+
 
 ### 5. Literature
-#### [1] Modele liniowe z efektami sta≈Çymi, losowymi i mieszanymi. P. Biecek
+#### [1] Modele liniowe z efektami sta≥Çymi, losowymi i mieszanymi. P. Biecek
 
 #### [2] www.google.com
