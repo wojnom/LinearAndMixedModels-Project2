@@ -117,7 +117,7 @@ Unfortunately the assumptions of mixed models are not met, because residuals don
 
 We checked qqplots of many different models in logtrans and BoxCox class. After that we decided, that our model will be 
 ```{r, warning=FALSE, message=FALSE}
-superModel <- lmer(log(length-0.04) ~ treatment*mouse + (1|Animal/Photo_ID_abs), 
+superModel <- lmer(log(length-0.03) ~ treatment*mouse + (1|Animal/Photo_ID_abs), 
 data = spines)
 summary(superModel)
 par(mfrow = c(1,1))
@@ -130,10 +130,10 @@ Now we can assume, that the residuals follow the normal distribution. Another as
 library(lattice)
 u=ranef(superModel,postVar=T)
 dotplot(u)
-qqmath(u)$`Animal:Photo_ID_abs`
+qqmath(u)
 ```
 
-Although middpoints of confidence intervals do not look like normal cdf, we still can fit the theoretical normal cdf into our confidence intervals, therefore we don't reject the hypothesis, that u has normal distribution.
+Although middpoints of confidence intervals do not look exactly like normal cdf, we still can fit the theoretical normal cdf into our confidence intervals, therefore we don't reject the hypothesis, that u has normal distribution.
 
 ### Are all components of our model significant?
 Firstly let's check whether fixed effects are important by looking at p-values.
@@ -148,14 +148,14 @@ This p-values give the same information as previously showed boxplots, that is i
 Should we include random effect? Yes, we should. It can be proved with permutational test
 ```{r, warning=FALSE, message=FALSE}
 N <- 1000
-logs <- replicate(N, logLik(lmer(log(length-0.04) ~ 
+logs <- replicate(N, logLik(lmer(log(length-0.03) ~ 
 treatment + mouse + sample(treatment:mouse) + (1|Animal/Photo_ID_abs), data = spines)))
 mean(logs > logLik(superModel))
 ```
 
 We can check whether nested model is better then the simpler one by using ANOVA test. 
 ```{r, warning=FALSE, message=FALSE}
-superModel2 <- lmer(log(length-0.04) ~ treatment*mouse + (1|Animal), 
+superModel2 <- lmer(log(length-0.03) ~ treatment*mouse + (1|Animal), 
 data = spines)
 
 anova(superModel2, superModel)
@@ -165,9 +165,9 @@ Low Pr(>Chisq) indicates that we can't neglect component (1|Animal:Photo_ID_abs)
 
 We showed, that our model is reasonable. Now we can check, by permutational test, if our hypothesis was correct. By permuting column with interaction effect we see, that indeed there is significant interaction between mouse type and treatment.
 ```{r, warning=FALSE, message=FALSE}
-N <- 100#1000
+N <- 1000
 spines$interaction <- (spines$mouse=="WT")*(spines$treatment=="li")
-logs <- replicate(N, logLik(lmer(log(length-0.04) ~ treatment + mouse + sample(interaction) + (1|Animal/Photo_ID_abs), data = spines)))
+logs <- replicate(N, logLik(lmer(log(length-0.03) ~ treatment + mouse + sample(interaction) + (1|Animal/Photo_ID_abs), data = spines)))
 mean(logs > logLik(superModel))
 ```
 
