@@ -1,0 +1,37 @@
+---
+title: "Project 2 | Phase 2"
+author: "Micha³ Frej, Agnieszka Sitko, Marcin Wojno"
+output:
+  html_document:
+    toc: yes
+  pdf_document:
+    toc: yes
+---
+```{r, warning = FALSE, message = FALSE, echo = FALSE}
+setwd("~/UniwersytetWarszawski/LinearModels/Project2")
+load("~/UniwersytetWarszawski/LinearModels/Project2/dendriticSpines.rda")
+library(lme4)
+library(lattice)
+library(PBImisc)
+library(dplyr)
+library(data.table)
+```
+
+
+##Introduction
+
+In this project we analize data about the length of dendric spines of mice. 
+
+One may group data by study. Each study contains information collected for two out of three types of mouse and for two out of three types of treatment. Number of observations by study, mouse type and treatment are gathered in a table below. 
+
+```{r, warning = FALSE, message = FALSE, echo = FALSE}
+attach(dendriticSpines)
+table <- matrix(table(Study:mouse:treatment), 15, 3)
+colnames(table) <- levels(Study)
+row.names(table) <- levels(mouse:treatment)
+table
+```
+//Komentarz
+```{r, warning = FALSE, message = FALSE}
+bwplot(length ~ mouse:treatment|Study) #to wymaga jeszcze jakiejœ zmiany, bo niewiele widaæ
+```
