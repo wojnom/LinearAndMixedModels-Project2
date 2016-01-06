@@ -1,6 +1,6 @@
 ---
 title: "Project 2 | Phase 2"
-author: "Micha³ Frej, Agnieszka Sitko, Marcin Wojno"
+author: "Micha³ Frej, Karolina Gajewska, Agnieszka Sitko, Marcin Wojno"
 output:
   html_document:
     toc: yes
@@ -14,24 +14,67 @@ library(lme4)
 library(lattice)
 library(PBImisc)
 library(dplyr)
-library(data.table)
+attach(dendriticSpines)
 ```
 
 
-##Introduction
+##Introduction - dependent variable
 
-In this project we analize data about the length of dendric spines of mice. 
+In this project we analize data about the length of dendritic spines of mice and its dependence on genotype and four selected types of treatment. 
 
-One may group data by study. Each study contains information collected for two out of three types of mouse and for two out of three types of treatment. Number of observations by study, mouse type and treatment are gathered in a table below. 
+Looking at QQ plots of `length` and `log(length)` we have decided to apply logarithmic transformation to the dependent variable, as it provides a distribution closer to normal.
 
 ```{r, warning = FALSE, message = FALSE, echo = FALSE}
-attach(dendriticSpines)
+par(mfrow = c(1,2))
+qqnorm(length, main = "QQ plot for length")
+qqline(length)
+qqnorm(log(length), main = "QQ plot for log(length)")
+qqline(log(length))
+par(mfrow = c(1,1))
+```
+
+##Creating a model - variables selection
+
+###Mouse type
+
+The following boxplot shows that there are differences in `log(length)` between mouse types.
+
+```{r, warning = FALSE, message = FALSE, echo = FALSE}
+bwplot(log(length) ~ mouse)
+```
+
+As we have stated in the beginning, we are interested in a influence of mouse genotype on the length of dendritic spines. Thus, we add `mouse` to our model as a fixed effect. 
+
+###Treatment
+
+`log(length)` differs among treatment types (boxplot below). 
+
+```{r, warning = FALSE, message = FALSE, echo = FALSE}
+bwplot(log(length) ~ treatment)
+```
+
+Following the same argumentation, we include `treatment` as a fixed effect.
+
+###Interaction between mouse type and treatment
+
+Using the results from the previous phase, we have decided to add interactions between `mouse` and `treatment` to the model. In the first phase we detected significant effect of such a interactions in KO study. 
+
+
+###Study
+
+Data may be groupped by study. Each study contains information collected for two out of three types of mouse and for two out of five types of treatment (including no treatment). Number of observations by study, mouse type and treatment are gathered in a table below. 
+```{r, warning = FALSE, message = FALSE, echo = FALSE}
 table <- matrix(table(Study:mouse:treatment), 15, 3)
 colnames(table) <- levels(Study)
 row.names(table) <- levels(mouse:treatment)
 table
 ```
-//Komentarz
-```{r, warning = FALSE, message = FALSE}
-bwplot(length ~ mouse:treatment|Study) #to wymaga jeszcze jakiejœ zmiany, bo niewiele widaæ
+
+As we analyze all three studies (which could have been performed independently), we cannot exclude from our model study effect. The following boxplot gives more reasons to include this effect to the model - dendritic spines of mice from KO study are on average shorter than dendritic spines of mice from other studies.
+
+
+```{r, warning = FALSE, message = FALSE, echo = FALSE}
+bwplot(log(length) ~ Study)
 ```
+
+However, we are not interested in a effect of a particular study. Therefore, we include `Study` as a random variable.
