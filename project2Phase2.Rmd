@@ -14,6 +14,7 @@ library(lme4)
 library(lattice)
 library(PBImisc)
 library(dplyr)
+library(ggplot2)
 attach(dendriticSpines)
 ```
 
@@ -95,53 +96,75 @@ We also check if the relation between the fixed variables introduced above and t
 After those analysis, we can finally run a model. We start with a small model defined by a formula `log(length) ~ mouse + treatment + (mouse + treatment|Study)` (called `addMouseTreatGroupedByStudy`)
 
 ```{r, warning = FALSE, message = FALSE, echo = FALSE}
-load("~/LinearAndMixedModels-Project2/addMouseTreatGroupedByStudy.RData")
-load("~/LinearAndMixedModels-Project2/multiMouseTreatGroupedByStudyWithoutREML.RData")
-load("~/LinearAndMixedModels-Project2/PhotoadditiveMouseTreatGroupedByStudy.rda")
-load("~/LinearAndMixedModels-Project2/additiveAnimalNestedInStudyWithoutREML.RData")
+load("additiveAnimal_noREML.RData")
+load("addMouseTreat_noREML.RData")
+load("multiMouseTreat_noREML.RData")
+load("PhotoadditiveMouseTreat_noREML.RData")
+load("crossedMouseTreat.RData")
 ```
 
 Now we add interaction between `mouse` and `treatment` to the model and check if it is significant.
 
 ```{r, warning = FALSE, message = FALSE}
-#anova(addMouseTreatGroupedByStudy, multiMouseTreatGroupedByStudyWithoutREML)
+#anova(addMouseTreat_noREML, multiMouseTreat_noREML)
 ```
 
-It turns out that interaction can be ignored.
+It turns out that interaction can be ignored, because p.value is high.
 
 Next, we include a random varable `Study/Animal` into the model.
 
 ```{r, warning = FALSE, message = FALSE}
-#anova(addMouseTreatGroupedByStudy, additiveAnimalNestedInStudyWithoutREML)
+#anova(addMouseTreat_noREML, additiveAnimal_noREML)
 ```
-
-
 
 Finally, we add a random variable `Study/Animal/Photo_ID_abs`.
 
 ```{r, warning = FALSE, message = FALSE}
-#anova(additiveAnimalNestedInStudyWithoutREML, PhotoadditiveMouseTreatGroupedByStudy)
+#anova(additiveAnimal_noREML, PhotoadditiveMouseTreat_noREML)
 ```
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!Zak³adam, ¿e najlepszy bêdzie model PhotoadditiveMouseTreatGroupedByStudy!!!!!!!!!!!!!!!
-!!!!Trzeba przetestowaæ istotnoœæ efektów sta³ych!!!!!!!!
-
+We can check now, whether adding interactions to the model will significantly improve our model or not.
+```{r, warning = FALSE, message = FALSE}
+#anova(PhotoadditiveMouseTreat_noREML, crossedMouseTreatment)
+```
+Adding additional 95 degrees of freedom increases the LogLikelihood only by 1, so both AIC and BIC give same result as p-value.  We should get rid of interactions.
 
 ##Model diagnostics
+Which fixed effects are important?
+```{r, warning = FALSE, message = FALSE}
+bestModel <- PhotoadditiveMouseTreat_noREML
+tStat <- summary(bestModel)$coeff[,3]
+pValues <- sapply(1:length(tStat),function(i) {2*pnorm(abs(tStat[i]),lower.tail = F)})
+pValues
+```
+Is variance homogeneous in different groups? Yes it is.
+```{r,warning=FALSE,message=FALSE}
+u <- ranef(bestModel, condVar = TRUE)
+e <- residuals(bestModel)
+
+# w contains a 'nested' random effect for Animal
+w <- u$`Animal:Study`[paste0(dendriticSpines$Animal,":",dendriticSpines$Study),1]
+
+# x contains a 'nested' random effect for Photo
+x <- u$`Photo_ID_abs:(Animal:Study)`[paste0(dendriticSpines$Photo_ID_abs,":",dendriticSpines$Animal,":",dendriticSpines$Study),1]
+
+d <- data.frame(model_residuals=c(e,e), random_effect=c(w,x), 
+                type=rep(c("Animal:Study", "Photo_ID_abs:Animal:Study"), each=nrow(dendriticSpines)))
+ggplot(d, aes(x=random_effect, y=model_residuals)) + geom_point() + geom_smooth(method="lm", col="red", size=1)+
+  facet_wrap(~type)
+```
 
 ###Residuals
 ```{r, warning = FALSE, message = FALSE}
-residuals <- fitted.values(PhotoadditiveMouseTreatGroupedByStudy) - log(length)
+residuals <- fitted.values(bestModel) - log(length)
 qqnorm(residuals)
 qqline(residuals)
 ```
-
 So residuals are normally distributed.
 
 ###Random effects
 
 ```{r, warning = FALSE, message = FALSE}
-u <- ranef(PhotoadditiveMouseTreatGroupedByStudy, postVar = TRUE)
+u <- ranef(bestModel,postVar=T)
 qqmath(u)[[1]] #nie wiem czemu, nie dodaj¹ siê przedzia³y ufnoœci...
 qqmath(u)[[2]]
 ```
