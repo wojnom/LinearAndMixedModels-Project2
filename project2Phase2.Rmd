@@ -57,7 +57,7 @@ Following the same argumentation, we include `treatment` as a fixed effect.
 
 ###Interaction between mouse type and treatment
 
-Using the results from the previous phase, we have decided to add interactions between `mouse` and `treatment` to the model. In the first phase we detected significant effect of such a interactions in KO study. 
+Using the results from the previous phase, we have decided to add interactions between `mouse` and `treatment` to the model. In the first phase we detected significant effect of such interactions in KO study. 
 
 ###Animal:Photo_ID_abs
 
@@ -104,7 +104,7 @@ load("~/LinearAndMixedModels-Project2/additiveAnimalNestedInStudyWithoutREML.RDa
 Now we add interaction between `mouse` and `treatment` to the model and check if it is significant.
 
 ```{r, warning = FALSE, message = FALSE}
-anova(addMouseTreatGroupedByStudy, multiMouseTreatGroupedByStudyWithoutREML)
+#anova(addMouseTreatGroupedByStudy, multiMouseTreatGroupedByStudyWithoutREML)
 ```
 
 It turns out that interaction can be ignored.
@@ -112,7 +112,7 @@ It turns out that interaction can be ignored.
 Next, we include a random varable `Study/Animal` into the model.
 
 ```{r, warning = FALSE, message = FALSE}
-anova(addMouseTreatGroupedByStudy, additiveAnimalNestedInStudyWithoutREML)
+#anova(addMouseTreatGroupedByStudy, additiveAnimalNestedInStudyWithoutREML)
 ```
 
 
@@ -120,7 +120,7 @@ anova(addMouseTreatGroupedByStudy, additiveAnimalNestedInStudyWithoutREML)
 Finally, we add a random variable `Study/Animal/Photo_ID_abs`.
 
 ```{r, warning = FALSE, message = FALSE}
-anova(additiveAnimalNestedInStudyWithoutREML, PhotoadditiveMouseTreatGroupedByStudy)
+#anova(additiveAnimalNestedInStudyWithoutREML, PhotoadditiveMouseTreatGroupedByStudy)
 ```
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!Zak³adam, ¿e najlepszy bêdzie model PhotoadditiveMouseTreatGroupedByStudy!!!!!!!!!!!!!!!
