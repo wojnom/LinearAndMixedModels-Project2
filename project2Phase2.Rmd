@@ -189,3 +189,13 @@ qqmath(u)[[2]]
 dotplot(u)$`Photo_ID_abs:(Animal:Study)`
 dotplot(u)$`Animal:Study`
 ```
+
+### Conclusions
+We picked mouse treatent as fixed effects grouped by Study and animal, photo as random. All the effects were significant.
+Interactions were not significant.
+
+
+### Literature
+#### [1] Modele liniowe z efektami sta??ymi, losowymi i mieszanymi. P. Biecek
+
+#### [2] www.google.com
