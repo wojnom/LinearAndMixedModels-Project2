@@ -1,6 +1,6 @@
 ---
 title: "Project 2 | Phase 2"
-author: "Micha≥ Frej, Karolina Gajewska, Agnieszka Sitko, Marcin Wojno"
+author: "Micha≈Ç Frej, Karolina Gajewska, Agnieszka Sitko, Marcin Wojno"
 output:
   html_document:
     toc: yes
@@ -8,8 +8,8 @@ output:
     toc: yes
 ---
 ```{r, warning = FALSE, message = FALSE, echo = FALSE}
-setwd("~/UniwersytetWarszawski/LinearModels/Project2")
-load("~/UniwersytetWarszawski/LinearModels/Project2/dendriticSpines.rda")
+setwd("/Users/Marcin/Documents/R/modelemieszaneiliniowe/LinearAndMixedModels-Project2")
+load("dendriticSpines.rda")
 library(lme4)
 library(lattice)
 library(PBImisc)
@@ -22,7 +22,7 @@ attach(dendriticSpines)
 
 ##Introduction - dependent variable
 
-In this project we analize data about the length of dendritic spines of mice and its dependence on genotype and five selected types of treatment (including no treatment as a one type). 
+In this project we analize data about the length of dendritic spines of mice and its dependence on genotype and five selected types of treatment (including no treatment as a one type).
 
 Looking at QQ plots of `length` and `log(length)` we have decided to apply logarithmic transformation to the dependent variable, as it provides a distribution closer to normal.
 
@@ -45,11 +45,11 @@ The following boxplot shows that there are differences in `log(length)` between 
 bwplot(log(length) ~ mouse)
 ```
 
-As we have stated in the beginning, we are interested in an influence of mouse genotype on the length of dendritic spines. Thus, we add `mouse` to our model as a fixed effect. 
+As we have stated in the beginning, we are interested in an influence of mouse genotype on the length of dendritic spines. Thus, we add `mouse` to our model as a fixed effect.
 
 ###Treatment
 
-`log(length)` differs among treatment types (see boxplot below). 
+`log(length)` differs among treatment types (see boxplot below).
 
 ```{r, warning = FALSE, message = FALSE, echo = FALSE}
 bwplot(log(length) ~ treatment)
@@ -59,13 +59,13 @@ Following the same argumentation, we include `treatment` as a fixed effect.
 
 ###Interaction between mouse type and treatment
 
-Using the results from the previous phase, we have decided to add interactions between `mouse` and `treatment` to the model. In the first phase we detected significant effect of such interactions in KO study. 
+Using the results from the previous phase, we have decided to add interactions between `mouse` and `treatment` to the model. In the first phase we detected significant effect of such interactions in KO study.
 
 ###Animal:Photo_ID_abs
 
 In the dataset variable `Photo_ID_abs` is naturally nested in `Animal` and `Animal` is nested in `Study`.
 
-We cannot exclude from the model `Animal` and `Photo_ID_abs` effects, but, as we are not so interested in an impact of a particular photo or individual, we assume they are random. 
+We cannot exclude from the model `Animal` and `Photo_ID_abs` effects, but, as we are not so interested in an impact of a particular photo or individual, we assume they are random.
 
 
 ###Study
@@ -86,9 +86,9 @@ As we analyze all three studies (which could have been performed independently),
 bwplot(log(length) ~ Study)
 ```
 
-However, we are not interested in a effect of a particular study. Therefore, we include `Study` as a random variable. 
+However, we are not interested in a effect of a particular study. Therefore, we include `Study` as a random variable.
 
-We also check if the relation between the fixed variables introduced above and the dependent variable differs between studies. 
+We also check if the relation between the fixed variables introduced above and the dependent variable differs between studies.
 
 ##Creating the model
 
@@ -137,13 +137,20 @@ So adding this variable improves the model significantly.
 
 ##Model diagnostics
 Which fixed effects are important?
+```{r, warning = FALSE, message = FALSE, echo=FALSE}
+load("PhotoadditiveMouseTreat_noREML_final.RData")
+```
+
 ```{r, warning = FALSE, message = FALSE}
-bestModel <- PhotoadditiveMouseTreat_noREML
+
+bestModel <- PhotoadditiveMouseTreat_noREML_final
 tStat <- summary(bestModel)$coeff[,3]
 pValues <- sapply(1:length(tStat),function(i) {2*pnorm(abs(tStat[i]),lower.tail = F)})
 pValues
 ```
+
 Is variance homogeneous in different groups? Yes it is.
+
 ```{r,warning=FALSE,message=FALSE}
 u <- ranef(bestModel, condVar = TRUE)
 e <- residuals(bestModel)
@@ -154,18 +161,20 @@ w <- u$`Animal:Study`[paste0(dendriticSpines$Animal,":",dendriticSpines$Study),1
 # x contains a 'nested' random effect for Photo
 x <- u$`Photo_ID_abs:(Animal:Study)`[paste0(dendriticSpines$Photo_ID_abs,":",dendriticSpines$Animal,":",dendriticSpines$Study),1]
 
-d <- data.frame(model_residuals=c(e,e), random_effect=c(w,x), 
+d <- data.frame(model_residuals=c(e,e), random_effect=c(w,x),
                 type=rep(c("Animal:Study", "Photo_ID_abs:Animal:Study"), each=nrow(dendriticSpines)))
 ggplot(d, aes(x=random_effect, y=model_residuals)) + geom_point() + geom_smooth(method="lm", col="red", size=1)+
   facet_wrap(~type)
 ```
 Let's look at residuals of our model.
+
 ```{r, warning = FALSE, message = FALSE}
 residuals <- fitted.values(bestModel) - log(length)
 qqnorm(residuals)
 qqline(residuals)
 ```
 The plot is really good. The following normality test confirms as well, that the residuals follow the normal distribution. We have over 38k residuals, so we can't use ks.test. In library nortest there is function lillie.test, which performs the Lilliefors(Kolmogorov-Smirnov) test for normality.
+
 ```{r,message=FALSE,warning=FALSE}
 lillie.test(residuals)
 ```
@@ -175,7 +184,7 @@ So residuals are normally distributed.
 
 ```{r, warning = FALSE, message = FALSE}
 u <- ranef(bestModel,condVar=T)
-qqmath(u)$`Animal:Study` #nie wiem czemu, nie dodajπ siÍ przedzia≥y ufnoúci...
+qqmath(u)$`Animal:Study`
 qqmath(u)[[2]]
 dotplot(u)$`Photo_ID_abs:(Animal:Study)`
 dotplot(u)$`Animal:Study`
