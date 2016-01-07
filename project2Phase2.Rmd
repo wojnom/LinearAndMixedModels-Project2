@@ -158,7 +158,6 @@ Let's look at residuals of our model.
 residuals <- fitted.values(bestModel) - log(length)
 qqnorm(residuals)
 qqline(residuals)
-shapiro.test(residuals)
 ```
 The plot is really good. The following normality test confirms as well, that the residuals follow the normal distribution. We have over 38k residuals, so we can't use ks.test. In library nortest there is function lillie.test, which performs the Lilliefors(Kolmogorov-Smirnov) test for normality.
 ```{r,message=FALSE,warning=FALSE}
@@ -166,12 +165,12 @@ lillie.test(residuals)
 ```
 So residuals are normally distributed.
 
-
-
 ###Random effects
 
 ```{r, warning = FALSE, message = FALSE}
-u <- ranef(bestModel,postVar=T)
-qqmath(u)[[1]] #nie wiem czemu, nie dodaj¹ siê przedzia³y ufnoœci...
+u <- ranef(bestModel,condVar=T)
+qqmath(u)$`Animal:Study` #nie wiem czemu, nie dodaj¹ siê przedzia³y ufnoœci...
 qqmath(u)[[2]]
+dotplot(u)$`Photo_ID_abs:(Animal:Study)`
+dotplot(u)$`Animal:Study`
 ```
