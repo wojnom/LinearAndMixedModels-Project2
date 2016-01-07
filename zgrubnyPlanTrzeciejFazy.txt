@@ -1,0 +1,19 @@
+------------------Notatki - faza 3-----------------
+
+0. najlepszy model:
+      
+      log(length) ~ mouse * treatment + (1|Study:Animal:Photo_ID_abs) + (1|Study:Animal)
+
+1. Trzeba będzie stworzyć zmienne binarne odpowiadające poziomom zmiennych grupujących (mouse i treatment). Usunąć nieistotne zmienne binarne.
+
+2. Zrobić interaction.ploty
+
+3. Zrobić LSD.test:
+      - dla treatment,
+      - dla treatment:mouse.
+
+4. Zrobić heatmapy dla korelacji efektów stałych.
+
+5. Na koniec dołączyć tabelę decyzyjną/drzewo decyzyjne.
+
+
