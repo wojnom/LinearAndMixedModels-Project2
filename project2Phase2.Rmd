@@ -15,6 +15,7 @@ library(lattice)
 library(PBImisc)
 library(dplyr)
 library(ggplot2)
+library(nortest)
 attach(dendriticSpines)
 ```
 
@@ -106,7 +107,7 @@ load("crossedMouseTreat.RData")
 Now we add interaction between `mouse` and `treatment` to the model and check if it is significant.
 
 ```{r, warning = FALSE, message = FALSE}
-#anova(addMouseTreat_noREML, multiMouseTreat_noREML)
+anova(addMouseTreat_noREML, multiMouseTreat_noREML)
 ```
 
 It turns out that interaction can be ignored, because p.value is high.
@@ -114,17 +115,17 @@ It turns out that interaction can be ignored, because p.value is high.
 Next, we include a random varable `Study/Animal` into the model.
 
 ```{r, warning = FALSE, message = FALSE}
-#anova(addMouseTreat_noREML, additiveAnimal_noREML)
+anova(addMouseTreat_noREML, additiveAnimal_noREML)
 ```
 
 Finally, we add a random variable `Study/Animal/Photo_ID_abs`.
 
 ```{r, warning = FALSE, message = FALSE}
-#anova(additiveAnimal_noREML, PhotoadditiveMouseTreat_noREML)
+anova(additiveAnimal_noREML, PhotoadditiveMouseTreat_noREML)
 ```
 We can check now, whether adding interactions to the model will significantly improve our model or not.
 ```{r, warning = FALSE, message = FALSE}
-#anova(PhotoadditiveMouseTreat_noREML, crossedMouseTreatment)
+anova(PhotoadditiveMouseTreat_noREML, crossedMouseTreatment)
 ```
 Adding additional 95 degrees of freedom increases the LogLikelihood only by 1, so both AIC and BIC give same result as p-value.  We should get rid of interactions.
 
@@ -152,14 +153,20 @@ d <- data.frame(model_residuals=c(e,e), random_effect=c(w,x),
 ggplot(d, aes(x=random_effect, y=model_residuals)) + geom_point() + geom_smooth(method="lm", col="red", size=1)+
   facet_wrap(~type)
 ```
-
-###Residuals
+Let's look at residuals of our model.
 ```{r, warning = FALSE, message = FALSE}
 residuals <- fitted.values(bestModel) - log(length)
 qqnorm(residuals)
 qqline(residuals)
+shapiro.test(residuals)
+```
+The plot is really good. The following normality test confirms as well, that the residuals follow the normal distribution. We have over 38k residuals, so we can't use ks.test. In library nortest there is function lillie.test, which performs the Lilliefors(Kolmogorov-Smirnov) test for normality.
+```{r,message=FALSE,warning=FALSE}
+lillie.test(residuals)
 ```
 So residuals are normally distributed.
+
+
 
 ###Random effects
 
