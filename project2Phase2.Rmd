@@ -90,11 +90,11 @@ However, we are not interested in a effect of a particular study. Therefore, we 
 
 We also check if the relation between the fixed variables introduced above and the dependent variable differs between studies. 
 
-(!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!tu by siê przyda³ jakiœ komentarz!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!)
-
 ##Creating the model
 
 After those analysis, we can finally run a model. We start with a small model defined by a formula `log(length) ~ mouse + treatment + (mouse + treatment|Study)` (called `addMouseTreatGroupedByStudy`)
+
+`addMouseTreatGroupedByStudy: log(length) ~ mouse + treatment + (mouse + treatment|Study)`
 
 ```{r, warning = FALSE, message = FALSE, echo = FALSE}
 load("additiveAnimal_noREML.RData")
@@ -106,11 +106,15 @@ load("crossedMouseTreat.RData")
 
 Now we add interaction between `mouse` and `treatment` to the model and check if it is significant.
 
+`multiMouseTreat_noREML: log(length) ~ mouse * treatment + (mouse * treatment|Study)`
+
 ```{r, warning = FALSE, message = FALSE}
 anova(addMouseTreat_noREML, multiMouseTreat_noREML)
 ```
 
 It turns out that interaction can be ignored, because p.value is high.
+
+`additiveAnimal_noREML: log(length) ~ mouse + treatment + (mouse + treatment|Study) + (1|Study/Animal)`
 
 Next, we include a random varable `Study/Animal` into the model.
 
@@ -118,16 +122,18 @@ Next, we include a random varable `Study/Animal` into the model.
 anova(addMouseTreat_noREML, additiveAnimal_noREML)
 ```
 
+So adding this variable improves the model significantly.
+
+`PhotoadditiveMouseTreat_noREML: log(length) ~ mouse + treatment + (mouse + treatment|Study) + (1|Study/Animal/Photo_ID_abs)`
+
 Finally, we add a random variable `Study/Animal/Photo_ID_abs`.
 
 ```{r, warning = FALSE, message = FALSE}
 anova(additiveAnimal_noREML, PhotoadditiveMouseTreat_noREML)
 ```
-We can check now, whether adding interactions to the model will significantly improve our model or not.
-```{r, warning = FALSE, message = FALSE}
-anova(PhotoadditiveMouseTreat_noREML, crossedMouseTreatment)
-```
-Adding additional 95 degrees of freedom increases the LogLikelihood only by 1, so both AIC and BIC give same result as p-value.  We should get rid of interactions.
+
+So adding this variable improves the model significantly.
+
 
 ##Model diagnostics
 Which fixed effects are important?
