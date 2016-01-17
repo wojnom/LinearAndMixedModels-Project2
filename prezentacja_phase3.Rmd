@@ -1,0 +1,8 @@
+---
+title: "Project 2 | Phase 3"
+author: "Micha³ Frej, Karolina Gajewska, Agnieszka Sitko, Marcin Wojno"
+date: "Modele liniowe i mieszane"
+output: 
+  html_document:
+    toc: TRUE
+---
