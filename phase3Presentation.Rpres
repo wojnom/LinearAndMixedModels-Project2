@@ -31,7 +31,46 @@ How did we get here? (AS)
 
 How did we get here? (AS)
 ========================================================
-*rysunek z modelami*
+```{r, warning =FALSE, message = FALSE, echo = FALSE}
+fixedModel <- lm(log(length) ~ mouse + treatment, dendriticSpines)
+
+#Adding interactions to the model
+fixedModelInteraction <- update(fixedModel, . ~ . + mouse * treatment)
+anova(fixedModel, fixedModelInteraction)
+#So interactions turn out to be important.
+
+#Adding mixed effect of a Study
+mixedModelStudy <- lmer(log(length) ~ mouse * treatment + (1|Study), dendriticSpines)
+N <- 100
+df <- dendriticSpines
+pvals <- replicate(N, {
+      df$Study <- sample(df$Study)
+      logLik(lmer(log(length) ~ mouse * treatment + (1|Study), data = df))
+})
+sum(pvals>logLik(mixedModelStudy))
+#Study effect turned out to be important.
+
+#Adding mixed effect of an Animal
+mixedModelStudyAnimal <- lmer(log(length) ~ mouse * treatment + (1|Study/Animal), dendriticSpines)
+anova(mixedModelStudy, mixedModelStudyAnimal)
+#Animal effect turned out to be important.
+
+#Adding mixed effect of a Photo
+mixedModelStudyAnimalPhoto <- lmer(log(length) ~ mouse * treatment + (1|Study/Animal/Photo_ID_abs), dendriticSpines)
+anova(mixedModelStudyAnimal, mixedModelStudyAnimalPhoto)
+#Animal effect turned out to be important.
+
+#Removing a study effect
+dendriticSpines$StudyAnimal <-paste0(dendriticSpines$Study, dendriticSpines$Animal)
+mixedModelAnimalPhoto <- lmer(log(length) ~ mouse * treatment + (1|StudyAnimal/Photo_ID_abs), dendriticSpines)
+anova(mixedModelAnimalPhoto, mixedModelStudyAnimalPhoto)
+#So study is not a significant variable.
+
+#Removing an Animal effect
+mixedModelPhoto <- lmer(log(length) ~ mouse * treatment + (1|Study:Animal:Photo_ID_abs), dendriticSpines)
+anova(mixedModelPhoto, mixedModelAnimalPhoto)
+#So we cannot consider an Animal to be unsignificant.
+```
 
 
 Final model 
