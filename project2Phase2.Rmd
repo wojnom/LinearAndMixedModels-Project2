@@ -42,7 +42,7 @@ par(mfrow = c(1,1))
 The following boxplot shows that there are differences in `log(length)` between mouse types.
 
 ```{r, warning = FALSE, message = FALSE, echo = FALSE}
-bwplot(log(length) ~ mouse)
+bwplot(log(length) ~ mouse, data = dendriticSpines)
 ```
 
 As we have stated in the beginning, we are interested in an influence of mouse genotype on the length of dendritic spines. Thus, we add `mouse` to our model as a fixed effect.

@@ -2,10 +2,19 @@ Project 2: Phase3
 ========================================================
 author: Michal Frej, Karolina Gajewska, Agnieszka Sitko, Marcin Wojno
 date: Modele liniowe i mieszane
+font-import: https://fonts.googleapis.com/css?family=Open+Sans
+font-family: 'Open Sans'
+
 ```{r, warning = FALSE, message = FALSE, echo = FALSE}
 library(lme4)
 library(lmerTest)
+library(igraph)
+library(ggplot2)
+library(lattice)
+
 load("~/LinearAndMixedModels-Project2/dendriticSpines.rda")
+setwd("~/LinearAndMixedModels-Project2/Phase3")
+attach(dendriticSpines)
 ```
 
 
@@ -13,7 +22,8 @@ Introduction (do podzialu)
 ========================================================
 *opis bazy danych.*
 *Tu sie skupiamy tylko na mouse i treatment - krotko opisac, jakie zaleznosci miedzy treatment a mouse mozna zauwazyc na boxplotach.*
-*Czego bedziemy sie spodziewac*
+*Czego bedziemy sie spodziewac*<br>
+<b> Main goal: find out which treatments affect length of dendritic spines for different mice. </b>
 
 Assumption
 ========================================================
@@ -24,14 +34,61 @@ Results (KG)
 ========================================================
 *drzewo decyzyjne*
 
-How did we get here? (AS)
+How did we get here? 
+========================================================   
+1. Creating a model. 
+      - what other variables may be considered?
+2. Choosing the right model.
+      - which model suits our data best?
+3. Backward elimination.
+
+Creating a model: study effect
+========================================================   
+left: 60%
+```{r, echo = FALSE}
+ggplot(aes(y = log(length), x = mouse, fill = mouse), data = dendriticSpines) + geom_boxplot()
+```
+
+***
+```{r, warning = FALSE, message = FALSE, echo = FALSE}
+tableMouse <- matrix(table(Study:mouse), 3,3)
+colnames(tableMouse) <- levels(Study)
+row.names(tableMouse) <- levels(mouse)
+knitr::kable(tableMouse)
+```
+
+```{r, warning = FALSE, message = FALSE, echo = FALSE}
+tableTreatment <- matrix(table(Study:treatment), 5,3)
+colnames(tableTreatment) <- levels(Study)
+row.names(tableTreatment) <- levels(treatment)
+knitr::kable(tableTreatment)
+```
+
+Creating a model: other effects
 ========================================================
-*opis pozostalych zmiennych, w jaki sposob je dodac do modelu*
+
+- individual effect of a mouse,
+- indiidual effect of a photo.
 
 
-How did we get here? (AS)
+Choosing the right model
 ========================================================
-```{r, warning =FALSE, message = FALSE, echo = FALSE}
+left: 40%
+
+<img src="improvement.png" height = 500>
+
+***
+<br>
+<br>
+<b>First model: </b><br>
+`log(length) ~ treatment`
+<br><br>
+
+<b>Final model: </b><br>
+`log(length) ~ mouse * treatment + (1|study:animal/photoID)`
+
+```{r, warning =FALSE, message = FALSE, echo = FALSE, eval = FALSE}
+
 fixedModel <- lm(log(length) ~ mouse + treatment, dendriticSpines)
 
 #Adding interactions to the model
@@ -41,13 +98,13 @@ anova(fixedModel, fixedModelInteraction)
 
 #Adding mixed effect of a Study
 mixedModelStudy <- lmer(log(length) ~ mouse * treatment + (1|Study), dendriticSpines)
-N <- 100
-df <- dendriticSpines
-pvals <- replicate(N, {
-      df$Study <- sample(df$Study)
-      logLik(lmer(log(length) ~ mouse * treatment + (1|Study), data = df))
-})
-sum(pvals>logLik(mixedModelStudy))
+#N <- 100
+#df <- dendriticSpines
+#pvals <- replicate(N, {
+#      df$Study <- sample(df$Study)
+#      logLik(lmer(log(length) ~ mouse * treatment + (1|Study), data = df))
+#})
+#sum(pvals>logLik(mixedModelStudy))
 #Study effect turned out to be important.
 
 #Adding mixed effect of an Animal
@@ -72,24 +129,27 @@ anova(mixedModelPhoto, mixedModelAnimalPhoto)
 #So we cannot consider an Animal to be unsignificant.
 ```
 
-
-Final model 
+Backward elimination (do podzialu)
 ========================================================
-$$\log(length)_i = WT_i + TG_i + \ \epsilon_i$$
+*Opis wykresu*
 
-
-ANOVA results (AS)
+Backward elimination: mouse type 
 ========================================================
-*Ten wykres trzeba bêdzie poprawiæ. Wezme srodkowy wykres i go powieksze*
-```{r, warning = FALSE, message = FALSE, echo = FALSE}
+<img src = "anovaMouse.png">
+```{r, warning = FALSE, message = FALSE, echo = FALSE, eval = FALSE}
 modelFull <- lmer(log(length) ~ mouse * treatment + (1|Study:Animal) + (1|Animal:Study:Photo_ID_abs), dendriticSpines)
 s <- step(modelFull)
 plot(s)
 ```
 
-ANOVA results (do podzialu)
+Backward elimination: treatment  
 ========================================================
-*Opis wykresu*
+<img src = "anovaTreatment.png">
+
+Backward elimination: interactions
+========================================================
+<img src = "anovaMouseTreatment.png">
+
 
 Graphical presentation (do podzialu)
 ========================================================
@@ -102,6 +162,8 @@ We have checked if the assumptions of mixed models are fullfilled. The assumptio
 - 
 - 
 - 
+
+<br>
 It turned out that our model is well constructed.
 ```{r, warning = FALSE, message = FALSE, echo = FALSE}
 #tu bêdzie diagnostyka w tle...
