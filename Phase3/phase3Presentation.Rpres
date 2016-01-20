@@ -5,12 +5,25 @@ date: Modele liniowe i mieszane
 font-import: https://fonts.googleapis.com/css?family=Open+Sans
 font-family: 'Open Sans'
 
+<style>
+
+.footer {
+    color: black; background: white;
+    position: fixed; top: 90%;
+    text-align:left; width:100%;
+}
+
+</style>
+
+
 ```{r, warning = FALSE, message = FALSE, echo = FALSE}
 library(lme4)
 library(lmerTest)
 library(igraph)
 library(ggplot2)
 library(lattice)
+library(MASS)
+library(nortest)
 
 load("~/LinearAndMixedModels-Project2/dendriticSpines.rda")
 setwd("~/LinearAndMixedModels-Project2/Phase3")
@@ -18,21 +31,46 @@ attach(dendriticSpines)
 ```
 
 
-Introduction (do podzialu)
+Introduction
 ========================================================
-*opis bazy danych.*
-*Tu sie skupiamy tylko na mouse i treatment - krotko opisac, jakie zaleznosci miedzy treatment a mouse mozna zauwazyc na boxplotach.*
-*Czego bedziemy sie spodziewac*<br>
-<b> Main goal: find out which treatments affect length of dendritic spines for different mice. </b>
+`Dendritic spines` is a dataset collected from three different studies. In this project we examine whether there are any relations between mice's length of dendtric spines* and other factors.<br><br>
+In the final phase our main goal will be to <b> find out which treatments affect length of dendritic spines for different mice. </b>
 
-Assumption
+<div class="footer" style="margin-top;font-size:70%;"> 
+*In this analysis we applied logarythmic transformation to the dependent variable to make it follow normal distribution. </div>
+
+Treatment
 ========================================================
-- mouse type cannot be changed during a study. So one mouse has only one type in a study.
+We consider five types of treatment:
+
+- no treatment (-),
+- lit,
+- some other substances (gm, dmso, chiron).
+
+In our model we set base level of `treatment` on "no treatment".
 
 
-Results (KG)
+Mouse type
 ========================================================
-*drzewo decyzyjne*
+Analyzing data visually (see next slide), we suspect that treatments may have different effects on different type of mouse. Therefore, we add a variable which describes type of mouse. We consider three types of mouse: 
+- WT (wild type) normal mice,
+- TG (transgenic) mice with additional genetic material and
+- KO (knock out) mice with a removed gene.<br><br>
+Our base level is "WT".<br><br>
+We also make a following assumptions:
+- mouse type cannot be changed during a study. So each pair of sets of mouse types are disjoint.
+
+Mouse type
+========================================================
+left:25%
+***
+```{r, echo = FALSE}
+ggplot(aes(y = log(length), x = mouse, fill = mouse), data = dendriticSpines) + geom_boxplot()
+```
+
+Results
+========================================================
+<img src = "log.jpg", height = 550, width = 1000>
 
 How did we get here? 
 ========================================================   
@@ -46,7 +84,7 @@ Creating a model: study effect
 ========================================================   
 left: 60%
 ```{r, echo = FALSE}
-ggplot(aes(y = log(length), x = mouse, fill = mouse), data = dendriticSpines) + geom_boxplot()
+ggplot(aes(y = log(length), x = Study, fill = Study), data = dendriticSpines) + geom_boxplot()
 ```
 
 ***
@@ -129,47 +167,137 @@ anova(mixedModelPhoto, mixedModelAnimalPhoto)
 #So we cannot consider an Animal to be unsignificant.
 ```
 
-Backward elimination (do podzialu)
-========================================================
-*Opis wykresu*
-
-Backward elimination: mouse type 
-========================================================
-<img src = "anovaMouse.png">
-```{r, warning = FALSE, message = FALSE, echo = FALSE, eval = FALSE}
-modelFull <- lmer(log(length) ~ mouse * treatment + (1|Study:Animal) + (1|Animal:Study:Photo_ID_abs), dendriticSpines)
-s <- step(modelFull)
-plot(s)
-```
-
-Backward elimination: treatment  
-========================================================
-<img src = "anovaTreatment.png">
-
-Backward elimination: interactions
-========================================================
-<img src = "anovaMouseTreatment.png">
-
-
-Graphical presentation (do podzialu)
-========================================================
-*Co nam przyjdzie do g³owy*
-
-
-Diagnostics (do podzialu)
+Diagnostics 
 ========================================================
 We have checked if the assumptions of mixed models are fullfilled. The assumptions are as follow:
-- 
-- 
-- 
+- normality of residuals,
+- normality of random components,
+- model residuals and random effects independence.
 
 <br>
-It turned out that our model is well constructed.
-```{r, warning = FALSE, message = FALSE, echo = FALSE}
-#tu bêdzie diagnostyka w tle...
+It turned out that our model is well constructed and all variables are significant.
+```{r, warning = FALSE, message = FALSE, echo = FALSE, eval = FALSE}
+model <- lmer(log(length)~mouse*treatment+(1|Study:Animal:Photo_ID_abs)+(1|Study:Animal),data=dendriticSpines,REML=F)
+summary(model)
+### normalnosc reszt
+qqnorm(residuals(model))
+qqline(residuals(model),col="red")
+lillie.test(residuals(model))
+
+### normalnosc efektow losowych
+### StudyAnimalPhoto jest normalny
+StudyAnimalPhoto <- unlist(ranef(model,condVar=T)$`Study:Animal:Photo_ID_abs`)
+qqnorm(StudyAnimalPhoto)
+qqline(StudyAnimalPhoto,col="red")
+shapiro.test(StudyAnimalPhoto)
+
+#StudyAnimal - qqplot slaby, shapiro-wilk slaby, ale probka mala i przez qqmath mozna
+#na styk poprowadzic prosta,wiec nie odrzucamy zalozenia o normalnosci
+StudyAnimal <- unlist(ranef(model,condVar=T)$`Study:Animal`)
+qqmath(ranef(model,condVar=T))$`Study:Animal`
+
+### niezaleznosc reszt od wyestymowanych length
+u <- ranef(model, condVar = TRUE)
+e <- residuals(model)
+
+w <- u$`Study:Animal`[paste0(dendriticSpines$Study,":",dendriticSpines$Animal),1]
+
+x <- u$`Study:Animal:Photo_ID_abs`[paste0(dendriticSpines$Study,":",dendriticSpines$Animal,":",dendriticSpines$Photo_ID_abs),1]
+
+d <- data.frame(model_residuals=c(e,e), random_effect=c(w,x),
+                type=rep(c("Study:Animal", "Study:Animal:Photo_ID_abs"), each=nrow(dendriticSpines)))
+ggplot(d, aes(x=random_effect, y=model_residuals)) + geom_point() + geom_smooth(method="lm", col="red", size=1)+
+      facet_wrap(~type)
+
+### jednorodnosc wariancji
+by(residuals(model),dendriticSpines$mouse : dendriticSpines$treatment,var)
+
+### Wald test for fixed effects
+tStat <- summary(model)$coeff[,3]
+pValues <- sapply(1:length(tStat), function(i) {2*pnorm(abs(tStat[i]),lower.tail = F)})
+pValues
+
+### istotnosc efektow losowych
+
+### testy permutacyjne - kazdy robi sie u mnie ok 6min
+#Aby sprawdzic, czy Study:Animal:Photo jest istotne przemieszam photo i zobacze, czy dostaje dobre wyniki
+pocz <- proc.time()
+N <- 100
+dS <- dendriticSpines
+logs <- replicate(N, {
+      dS$Photo_ID_abs <- sample(dS$Photo_ID_abs)
+      logLik(lmer(log(length)~mouse*treatment+(1|Study:Animal:Photo_ID_abs)+(1|Study:Animal),data=dS,REML=F))
+}
+      )
+mean(logs > logLik(model))
+proc.time()-pocz
+#Wyszlo 0, wiec photo jest istotne
+
+pocz <- proc.time()
+N <- 100
+dS <- dendriticSpines
+logs <- replicate(N, {
+      dS$Animal <- sample(dS$Animal)
+      logLik(lmer(log(length)~mouse*treatment+(1|Study:Animal:Photo_ID_abs)+(1|Study:Animal),data=dS,REML=F))
+}
+)
+mean(logs > logLik(model))
+proc.time()-pocz
+```
+
+Results - parameters estimates
+========================================================
+left:23%
+***
+|                        | fixef.model.|
+|:-----------------------|------------:|
+|(Intercept)             |   -0.8291645|
+|mouseKO                 |   -0.2203238|
+|mouseTG                 |    0.0180109|
+|treatmentchiron         |    0.4113144|
+|treatmentdmso           |    0.4507735|
+|treatmentgm             |    0.4696296|
+|treatmentli             |   -0.2536427|
+|mouseTG:treatmentchiron |   -0.0075872|
+|mouseTG:treatmentdmso   |    0.0858938|
+|mouseKO:treatmentli     |    0.1889923|
+
+Least squere means analysis
+========================================================
+left:23%
+
+***
+
+|          |means |groups |
+|:---------|:-----|:------|
+|TG:dmso   |-0.29 |a      |
+|TG:gm     |-0.33 |b      |
+|WT:gm     |-0.34 |b      |
+|WT:dmso   |-0.35 |b      |
+|WT:chiron |-0.41 |b      |
+|TG:chiron |-0.45 |b      |
+|WT:-      |-0.84 |c      |
+|KO:-      |-1.05 |d      |
+|WT:li     |-1.08 |d      |
+|KO:li     |-1.11 |d      |
+
+
+```{r, warning = FALSE, message = FALSE, echo = FALSE, eval = FALSE}
+mouseTreatment <- mouse:treatment
+modelFull <- lmer(log(length) ~ mouse + treatment + mouseTreatment + (1|Study:Animal) + (1|Animal:Study:Photo_ID_abs), dendriticSpines)
+s <- step(modelFull)
+na.omit(s[[7]])
 ```
 
 
-Conclusions (koniec)
+Conclusions
 ========================================================
+- all treatments affect spine length.
+- if we take "no treatment" as a base level, chiron, dmso and gm treatments have in general positive influence on length, while li - negative.
+- we cannot neglect the mouse type effect in dendritic spine lengths analysis. We notice that KO mice spines are shorter and TG longer in comparison to WT.
+- an important element are interactions between treatment and mouse type. 
 
+
+========================================================
+<br><br><br><br>
+<h2>Thank you!  Questions?</h2>

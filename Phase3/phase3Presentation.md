@@ -5,24 +5,58 @@ date: Modele liniowe i mieszane
 font-import: https://fonts.googleapis.com/css?family=Open+Sans
 font-family: 'Open Sans'
 
+<style>
+
+.footer {
+    color: black; background: white;
+    position: fixed; top: 90%;
+    text-align:left; width:100%;
+}
+
+</style>
 
 
 
-Introduction (do podzialu)
+
+
+Introduction
 ========================================================
-*opis bazy danych.*
-*Tu sie skupiamy tylko na mouse i treatment - krotko opisac, jakie zaleznosci miedzy treatment a mouse mozna zauwazyc na boxplotach.*
-*Czego bedziemy sie spodziewac*<br>
-<b> Main goal: find out which treatments affect length of dendritic spines for different mice. </b>
+`Dendritic spines` is a dataset collected from three different studies. In this project we examine whether there are any relations between mice's length of dendtric spines* and other factors.<br><br>
+In the final phase our main goal will be to <b> find out which treatments affect length of dendritic spines for different mice. </b>
 
-Assumption
+<div class="footer" style="margin-top;font-size:70%;"> 
+*In this analysis we applied logarythmic transformation to the dependent variable to make it follow normal distribution. </div>
+
+Treatment
 ========================================================
-- mouse type cannot be changed during a study. So one mouse has only one type in a study.
+We consider five types of treatment:
+
+- no treatment (-),
+- lit,
+- some other substances (gm, dmso, chiron).
+
+In our model we set base level of `treatment` on "no treatment".
 
 
-Results (KG)
+Mouse type
 ========================================================
-*drzewo decyzyjne*
+Analyzing data visually (see next slide), we suspect that treatments may have different effects on different type of mouse. Therefore, we add a variable which describes type of mouse. We consider three types of mouse: 
+- WT (wild type) normal mice,
+- TG (transgenic) mice with additional genetic material and
+- KO (knock out) mice with a removed gene.<br><br>
+Our base level is "WT".<br><br>
+We also make a following assumptions:
+- mouse type cannot be changed during a study. So each pair of sets of mouse types are disjoint.
+
+Mouse type
+========================================================
+left:25%
+***
+![plot of chunk unnamed-chunk-2](phase3Presentation-figure/unnamed-chunk-2-1.png)
+
+Results
+========================================================
+<img src = "log.jpg", height = 550, width = 1000>
 
 How did we get here? 
 ========================================================   
@@ -35,7 +69,7 @@ How did we get here?
 Creating a model: study effect
 ========================================================   
 left: 60%
-![plot of chunk unnamed-chunk-2](phase3Presentation-figure/unnamed-chunk-2-1.png)
+![plot of chunk unnamed-chunk-3](phase3Presentation-figure/unnamed-chunk-3-1.png)
 
 ***
 
@@ -79,41 +113,65 @@ left: 40%
 
 
 
-Backward elimination (do podzialu)
-========================================================
-*Opis wykresu*
-
-Backward elimination: mouse type 
-========================================================
-<img src = "anovaMouse.png">
-
-
-Backward elimination: treatment  
-========================================================
-<img src = "anovaTreatment.png">
-
-Backward elimination: interactions
-========================================================
-<img src = "anovaMouseTreatment.png">
-
-
-Graphical presentation (do podzialu)
-========================================================
-*Co nam przyjdzie do g³owy*
-
-
-Diagnostics (do podzialu)
+Diagnostics 
 ========================================================
 We have checked if the assumptions of mixed models are fullfilled. The assumptions are as follow:
-- 
-- 
-- 
+- normality of residuals,
+- normality of random components,
+- model residuals and random effects independence.
 
 <br>
-It turned out that our model is well constructed.
+It turned out that our model is well constructed and all variables are significant.
 
 
-
-Conclusions (koniec)
+Results - parameters estimates
 ========================================================
+left:23%
+***
+|                        | fixef.model.|
+|:-----------------------|------------:|
+|(Intercept)             |   -0.8291645|
+|mouseKO                 |   -0.2203238|
+|mouseTG                 |    0.0180109|
+|treatmentchiron         |    0.4113144|
+|treatmentdmso           |    0.4507735|
+|treatmentgm             |    0.4696296|
+|treatmentli             |   -0.2536427|
+|mouseTG:treatmentchiron |   -0.0075872|
+|mouseTG:treatmentdmso   |    0.0858938|
+|mouseKO:treatmentli     |    0.1889923|
 
+Least squere means analysis
+========================================================
+left:23%
+
+***
+
+|          |means |groups |
+|:---------|:-----|:------|
+|TG:dmso   |-0.29 |a      |
+|TG:gm     |-0.33 |b      |
+|WT:gm     |-0.34 |b      |
+|WT:dmso   |-0.35 |b      |
+|WT:chiron |-0.41 |b      |
+|TG:chiron |-0.45 |b      |
+|WT:-      |-0.84 |c      |
+|KO:-      |-1.05 |d      |
+|WT:li     |-1.08 |d      |
+|KO:li     |-1.11 |d      |
+
+
+
+
+
+Conclusions
+========================================================
+- all treatments affect spine length.
+- if we take "no treatment" as a base level, chiron, dmso and gm treatments have in general positive influence on length, while li - negative.
+- we cannot neglect the mouse type effect in dendritic spine lengths analysis. We notice that KO mice spines are shorter and TG longer in comparison to WT.
+- an important element are interactions between treatment and mouse type. 
+
+
+========================================================
+<br><br><br><br>
+<h2>Thank you!  Questions?</h2>
