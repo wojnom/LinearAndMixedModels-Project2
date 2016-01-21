@@ -19,6 +19,18 @@ font-family: 'Open Sans'
 
 
 
+Agenda
+========================================================
+- Introduction
+    * dataset description
+    * problem statement
+    * main factors
+- Results
+- Model creation - other factors taken into account
+- Diagnostics
+- Conclusions
+
+
 Introduction
 ========================================================
 `Dendritic spines` is a dataset collected from three different studies. In this project we examine whether there are any relations between mice's length of dendtric spines* and other factors.<br><br>
@@ -45,14 +57,14 @@ Analyzing data visually (see next slide), we suspect that treatments may have di
 - *TG* (transgenic) mice with additional genetic material and
 - *KO* (knock out) mice with a removed gene.<br><br>
 <b>Our base level is "WT".</b><br><br>
-We also make a following assumptions:
+We also make a following assumption:
 - mouse type cannot be changed during a study. So each pair of sets of mouse types are disjoint.
 
 Mouse type
 ========================================================
 left:25%
 ***
-![plot of chunk unnamed-chunk-2](phase3Presentation-figure/unnamed-chunk-2-1.png)
+![plot of chunk unnamed-chunk-2](phase3Presentation-figure/unnamed-chunk-2-1.png) 
 
 Results
 ========================================================
@@ -69,7 +81,7 @@ How did we get here?
 Creating a model: study effect
 ========================================================   
 left: 60%
-![plot of chunk unnamed-chunk-3](phase3Presentation-figure/unnamed-chunk-3-1.png)
+![plot of chunk unnamed-chunk-3](phase3Presentation-figure/unnamed-chunk-3-1.png) 
 
 ***
 
@@ -173,5 +185,6 @@ Conclusions
 
 
 ========================================================
-<br><br><br><br>
+<br><br><br>
 <h2>Thank you!  Questions?</h2>
+<img src = "tkanks.jpg", height = 450, width = 600>

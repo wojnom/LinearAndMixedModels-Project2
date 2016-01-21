@@ -25,10 +25,22 @@ library(lattice)
 library(MASS)
 library(nortest)
 
-load("~/LinearAndMixedModels-Project2/dendriticSpines.rda")
-setwd("~/LinearAndMixedModels-Project2/Phase3")
+setwd("~/Documents/R/modelemieszaneiliniowe/LinearAndMixedModels-Project2/Phase3")
+load("~/Documents/R/modelemieszaneiliniowe/LinearAndMixedModels-Project2/dendriticSpines.rda")
 attach(dendriticSpines)
 ```
+
+
+Agenda
+========================================================
+- Introduction
+    * dataset description
+    * problem statement
+    * main factors
+- Results
+- Model creation - other factors taken into account
+- Diagnostics
+- Conclusions
 
 
 Introduction
@@ -57,7 +69,7 @@ Analyzing data visually (see next slide), we suspect that treatments may have di
 - *TG* (transgenic) mice with additional genetic material and
 - *KO* (knock out) mice with a removed gene.<br><br>
 <b>Our base level is "WT".</b><br><br>
-We also make a following assumptions:
+We also make a following assumption:
 - mouse type cannot be changed during a study. So each pair of sets of mouse types are disjoint.
 
 Mouse type
@@ -299,5 +311,6 @@ Conclusions
 
 
 ========================================================
-<br><br><br><br>
+<br><br><br>
 <h2>Thank you!  Questions?</h2>
+<img src = "tkanks.jpg", height = 450, width = 600>
