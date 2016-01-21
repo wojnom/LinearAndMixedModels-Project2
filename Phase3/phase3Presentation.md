@@ -31,20 +31,20 @@ Treatment
 ========================================================
 We consider five types of treatment:
 
-- no treatment (-),
-- lit,
-- some other substances (gm, dmso, chiron).
+- *no treatment* (-),
+- *lit*,
+- some other substances (*gm*, *dmso*, *chiron*).
 
-In our model we set base level of `treatment` on "no treatment".
+In our model we <b>set base level of `treatment` at "no treatment"</b>.
 
 
 Mouse type
 ========================================================
 Analyzing data visually (see next slide), we suspect that treatments may have different effects on different type of mouse. Therefore, we add a variable which describes type of mouse. We consider three types of mouse: 
-- WT (wild type) normal mice,
-- TG (transgenic) mice with additional genetic material and
-- KO (knock out) mice with a removed gene.<br><br>
-Our base level is "WT".<br><br>
+- *WT* (wild type) normal mice,
+- *TG* (transgenic) mice with additional genetic material and
+- *KO* (knock out) mice with a removed gene.<br><br>
+<b>Our base level is "WT".</b><br><br>
 We also make a following assumptions:
 - mouse type cannot be changed during a study. So each pair of sets of mouse types are disjoint.
 
@@ -64,7 +64,7 @@ How did we get here?
       - what other variables may be considered?
 2. Choosing the right model.
       - which model suits our data best?
-3. Backward elimination.
+3. Parameters estimation and pairwise comparisons.
 
 Creating a model: study effect
 ========================================================   
@@ -126,20 +126,20 @@ It turned out that our model is well constructed and all variables are significa
 
 Results - parameters estimates
 ========================================================
-left:23%
+left:10%
 ***
-|                        | fixef.model.|
-|:-----------------------|------------:|
-|(Intercept)             |   -0.8291645|
-|mouseKO                 |   -0.2203238|
-|mouseTG                 |    0.0180109|
-|treatmentchiron         |    0.4113144|
-|treatmentdmso           |    0.4507735|
-|treatmentgm             |    0.4696296|
-|treatmentli             |   -0.2536427|
-|mouseTG:treatmentchiron |   -0.0075872|
-|mouseTG:treatmentdmso   |    0.0858938|
-|mouseKO:treatmentli     |    0.1889923|
+|                        | fixed effects         | p-values         |
+|:-----------------------|----------------------:|-----------------:|
+|(Intercept)             |                  -0.83|            0.0000|
+|mouseKO                 |                  -0.22|            0.0013|
+|mouseTG                 |                   0.02|            0.4722|
+|treatmentchiron         |                   0.41|            0.0000|
+|treatmentdmso           |                   0.45|            0.0000|
+|treatmentgm             |                   0.47|            0.0000|
+|treatmentli             |                  -0.25|            0.0001|
+|mouseTG:treatmentchiron |                  -0.01|            0.8750|
+|mouseTG:treatmentdmso   |                   0.09|            0.0120|
+|mouseKO:treatmentli     |                   0.19|            0.0364|
 
 Least squere means analysis
 ========================================================
@@ -168,8 +168,8 @@ Conclusions
 ========================================================
 - all treatments affect spine length.
 - if we take "no treatment" as a base level, chiron, dmso and gm treatments have in general positive influence on length, while li - negative.
-- we cannot neglect the mouse type effect in dendritic spine lengths analysis. We notice that KO mice spines are shorter and TG longer in comparison to WT.
-- an important element are interactions between treatment and mouse type. 
+- we cannot neglect the KO type effect in dendritic spine lengths analysis. We notice that KO mice spines are shorter in comparison to WT mice spines. However, WT and TG mice have spines of similar length.
+- an important element are some interactions between treatment and mouse type (TG:dmso - positive, KO:li - positive). 
 
 
 ========================================================

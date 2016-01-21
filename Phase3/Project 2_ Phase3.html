@@ -1,6 +1,6 @@
 <!DOCTYPE html>
-<!-- saved from url=(0096)file:///C:/Users/AGNIES~1/AppData/Local/Temp/RtmpAlPgXz/view7e82520280a.dir/presentation.html#/1 -->
-<html lang="en" class=""><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<!-- saved from url=(0095)file:///C:/Users/AGNIES~1/AppData/Local/Temp/RtmpAlPgXz/view7e82520280a.dir/presentation.html#/ -->
+<html lang="en" class="section"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <meta charset="utf-8">
   <title>Project 2: Phase3 </title>
     
@@ -783,7 +783,7 @@ hljs.initHighlightingOnLoad();
   <div class="reveal linear" data-transition-speed="default">
   <div class="slides" style="width: 960px; height: 700px; zoom: 1;">
 
-<section data-state="section" data-transition="linear" data-transition-speed="default" class="past" style="display: block;">
+<section data-state="section" data-transition="linear" data-transition-speed="default" class="present" style="display: block;">
 <h1>Project 2: Phase3 </h1><p>Michal Frej, Karolina Gajewska, Agnieszka Sitko, Marcin Wojno<br>Modele liniowe i mieszane</p>
 
 <div class="slideContent">
@@ -800,7 +800,7 @@ hljs.initHighlightingOnLoad();
 </div>
 
 </section>
-<section data-transition="linear" data-transition-speed="default" class="present" style="display: block;">
+<section data-transition="linear" data-transition-speed="default" class="future" style="display: block;">
 <h3>Introduction</h3>
 <div class="slideContent">
 <p><code>Dendritic spines</code> is a dataset collected from three different studies. In this project we examine whether there are any relations between mice's length of dendtric spines* and other factors.<br><br>
@@ -818,12 +818,12 @@ In the final phase our main goal will be to <b> find out which treatments affect
 <p>We consider five types of treatment:</p>
 
 <ul>
-<li>no treatment (-),</li>
-<li>lit,</li>
-<li>some other substances (gm, dmso, chiron).</li>
+<li><em>no treatment</em> (-),</li>
+<li><em>lit</em>,</li>
+<li>some other substances (<em>gm</em>, <em>dmso</em>, <em>chiron</em>).</li>
 </ul>
 
-<p>In our model we set base level of <code>treatment</code> on “no treatment”.</p>
+<p>In our model we <b>set base level of <code>treatment</code> at “no treatment”</b>.</p>
 
 </div>
 
@@ -834,10 +834,10 @@ In the final phase our main goal will be to <b> find out which treatments affect
 <p>Analyzing data visually (see next slide), we suspect that treatments may have different effects on different type of mouse. Therefore, we add a variable which describes type of mouse. We consider three types of mouse: </p>
 
 <ul>
-<li>WT (wild type) normal mice,</li>
-<li>TG (transgenic) mice with additional genetic material and</li>
-<li>KO (knock out) mice with a removed gene.<br><br>
-Our base level is “WT”.<br><br>
+<li><em>WT</em> (wild type) normal mice,</li>
+<li><em>TG</em> (transgenic) mice with additional genetic material and</li>
+<li><em>KO</em> (knock out) mice with a removed gene.<br><br>
+<b>Our base level is “WT”.</b><br><br>
 We also make a following assumptions:</li>
 <li>mouse type cannot be changed during a study. So each pair of sets of mouse types are disjoint.</li>
 </ul>
@@ -845,7 +845,7 @@ We also make a following assumptions:</li>
 </div>
 
 </section>
-<section data-transition="linear" data-transition-speed="default" class="future" style="display: block;">
+<section data-transition="linear" data-transition-speed="default" class="future" style="display: none;">
 <h3>Mouse type</h3>
 <div class="column column1 slideContent" style="width: 23%;">
 
@@ -881,7 +881,7 @@ We also make a following assumptions:</li>
 <ul>
 <li>which model suits our data best?</li>
 </ul></li>
-<li>Backward elimination.</li>
+<li>Parameters estimation and pairwise comparisons.</li>
 </ol>
 
 </div>
@@ -1022,65 +1022,76 @@ It turned out that our model is well constructed and all variables are significa
 </section>
 <section data-transition="linear" data-transition-speed="default" class="future" style="display: none;">
 <h3>Results - parameters estimates</h3>
-<div class="column column1 slideContent" style="width: 21%;">
+<div class="column column1 slideContent" style="width: 8%;">
 
 </div>
 
-<div class="column column2 slideContent" style="width: 75%;">
+<div class="column column2 slideContent" style="width: 88%;">
 
 
 <table><thead>
 <tr>
 <th align="left"></th>
-<th align="right">fixef.model.</th>
+<th align="right">fixed effects</th>
+<th align="right">p-values</th>
 </tr>
 </thead><tbody>
 <tr>
 <td align="left">(Intercept)</td>
-<td align="right">-0.8291645</td>
+<td align="right">-0.83</td>
+<td align="right">0.0000</td>
 </tr>
 <tr>
 <td align="left">mouseKO</td>
-<td align="right">-0.2203238</td>
+<td align="right">-0.22</td>
+<td align="right">0.0013</td>
 </tr>
 <tr>
 <td align="left">mouseTG</td>
-<td align="right">0.0180109</td>
+<td align="right">0.02</td>
+<td align="right">0.4722</td>
 </tr>
 <tr>
 <td align="left">treatmentchiron</td>
-<td align="right">0.4113144</td>
+<td align="right">0.41</td>
+<td align="right">0.0000</td>
 </tr>
 <tr>
 <td align="left">treatmentdmso</td>
-<td align="right">0.4507735</td>
+<td align="right">0.45</td>
+<td align="right">0.0000</td>
 </tr>
 <tr>
 <td align="left">treatmentgm</td>
-<td align="right">0.4696296</td>
+<td align="right">0.47</td>
+<td align="right">0.0000</td>
 </tr>
 <tr>
 <td align="left">treatmentli</td>
-<td align="right">-0.2536427</td>
+<td align="right">-0.25</td>
+<td align="right">0.0001</td>
 </tr>
 <tr>
 <td align="left">mouseTG:treatmentchiron</td>
-<td align="right">-0.0075872</td>
+<td align="right">-0.01</td>
+<td align="right">0.8750</td>
 </tr>
 <tr>
 <td align="left">mouseTG:treatmentdmso</td>
-<td align="right">0.0858938</td>
+<td align="right">0.09</td>
+<td align="right">0.0120</td>
 </tr>
 <tr>
 <td align="left">mouseKO:treatmentli</td>
-<td align="right">0.1889923</td>
+<td align="right">0.19</td>
+<td align="right">0.0364</td>
 </tr>
 </tbody></table>
 
 </div>
 
 </section>
-<section data-transition="linear" data-transition-speed="default" class="future" style="display: none;">
+<section data-transition="linear" data-transition-speed="default" class="future" style="display: block;">
 <h3>Least squere means analysis</h3>
 <div class="column column1 slideContent" style="width: 21%;">
 
@@ -1157,8 +1168,8 @@ It turned out that our model is well constructed and all variables are significa
 <ul>
 <li>all treatments affect spine length.</li>
 <li>if we take “no treatment” as a base level, chiron, dmso and gm treatments have in general positive influence on length, while li - negative.</li>
-<li>we cannot neglect the mouse type effect in dendritic spine lengths analysis. We notice that KO mice spines are shorter and TG longer in comparison to WT.</li>
-<li>an important element are interactions between treatment and mouse type. </li>
+<li>we cannot neglect the KO type effect in dendritic spine lengths analysis. We notice that KO mice spines are shorter in comparison to WT mice spines. However, WT and TG mice have spines of similar length.</li>
+<li>an important element are some interactions between treatment and mouse type (TG:dmso - positive, KO:li - positive). </li>
 </ul>
 
 </div>
@@ -1177,7 +1188,7 @@ It turned out that our model is well constructed and all variables are significa
 
 
   </div>
-  <div class="progress" style="display: block;"><span style="width: 137.143px;"></span></div><aside class="controls" style="display: block;"><div class="navigate-left enabled"></div><div class="navigate-right enabled"></div><div class="navigate-up"></div><div class="navigate-down"></div></aside><div class="state-background"></div><div class="pause-overlay"></div></div>
+  <div class="progress" style="display: block;"><span style="width: 0px;"></span></div><aside class="controls" style="display: block;"><div class="navigate-left"></div><div class="navigate-right enabled"></div><div class="navigate-up"></div><div class="navigate-down"></div></aside><div class="state-background"></div><div class="pause-overlay"></div></div>
 
   <script type="text/javascript">
 /**
